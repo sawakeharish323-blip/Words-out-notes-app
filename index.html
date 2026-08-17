@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexiPad - Modern Notes App</title>
+    <style>
+        /* आधुनिक और साफ-सुथरा डिज़ाइन (CSS) */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0d1117; /* GitHub जैसा डार्क बैकग्राउंड */
+            color: #c9d1d9;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: #161b22;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            border: 1px solid #30363d;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #58a6ff;
+        }
+
+        /* इनपुट और बटन स्टाइल्स */
+        .input-area {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #58a6ff;
+        }
+
+        button {
+            padding: 12px;
+            background-color: #238636; /* ग्रीन कमिट बटन */
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background-color: #2ea44f;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        /* नोट कार्ड्स का डिज़ाइन */
+        .notes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .note-card {
+            background: #21262d;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #58a6ff;
+            position: relative;
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .note-title {
+            font-weight: bold;
+            color: #f0f6fc;
+        }
+
+        .note-tag {
+            font-size: 12px;
+            background: #388bfd26;
+            color: #58a6ff;
+            padding: 2px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+        }
+
+        .note-body {
+            font-size: 14px;
+            color: #8b949e;
+            white-space: pre-wrap;
+        }
+
+        .delete-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: #da3637;
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .delete-btn:hover {
+            background: #f85149;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>📝 LexiPad</h1>
+
+        <!-- सर्च बार -->
+        <div class="search-box">
+            <input type="text" id="searchBar" placeholder="नोट्स खोजें..." onkeyup="filterNotes()">
+        </div>
+
+        <!-- नया नोट जोड़ने का एरिया -->
+        <div class="input-area">
+            <input type="text" id="noteTitle" placeholder="शीर्षक (Title)">
+            <select id="noteTag">
+                <option value="Personal">Personal</option>
+                <option value="Work">Work</option>
+                <option value="Idea">Idea</option>
+            </select>
+            <textarea id="noteContent" rows="4" placeholder="यहाँ अपने विचार लिखें..."></textarea>
+            <button onclick="addNote()">नोट सेव करें</button>
+        </div>
+
+        <!-- नोट्स की लिस्ट -->
+        <div class="notes-list" id="notesList"></div>
+    </div>
+
+    <script>
+        // ऐप का लॉजिक (JavaScript)
+        let notes = JSON.parse(localStorage.getItem('my_notes')) || [];
+
+        function displayNotes(notesToRender = notes) {
+            const list = document.getElementById('notesList');
+            list.innerHTML = '';
+
+            notesToRender.forEach((note, index) => {
+                list.innerHTML += `
+                    <div class="note-card">
+                        <div class="note-header">
+                            <span class="note-title">${note.title || 'बिना शीर्षक का नोट'}</span>
+                            <span class="note-tag">${note.tag}</span>
+                        </div>
+                        <div class="note-body">${note.content}</div>
+                        <button class="delete-btn" onclick="deleteNote(${index})">हटाएं</button>
+                    </div>
+                `;
+            });
+        }
+
+        function addNote() {
+            const titleInput = document.getElementById('noteTitle');
+            const contentInput = document.getElementById('noteContent');
+            const tagInput = document.getElementById('noteTag');
+
+            if (contentInput.value.trim() === '') {
+                alert('कृपया नोट में कुछ लिखें!');
+                return;
+            }
+
+            const newNote = {
+                title: titleInput.value,
+                content: contentInput.value,
+                tag: tagInput.value
+            };
+
+            notes.push(newNote);
+            localStorage.setItem('my_notes', JSON.stringify(notes));
+            
+            // इनपुट साफ़ करें
+            titleInput.value = '';
+            contentInput.value = '';
+            
+            displayNotes();
+        }
+
+        function deleteNote(index) {
+            notes.splice(index, 1);
+            localStorage.setItem('my_notes', JSON.stringify(notes));
+            displayNotes();
+        }
+
+        function filterNotes() {
+            const text = document.getElementById('searchBar').value.toLowerCase();
+            const filtered = notes.filter(note => 
+                note.title.toLowerCase().includes(text) || 
+                note.content.toLowerCase().includes(text)
+            );
+            displayNotes(filtered);
+        }
+
+        // पहली बार लोड होने पर नोट्स दिखाएं
+        displayNotes();
+    </script>
+</body>
+</html>
